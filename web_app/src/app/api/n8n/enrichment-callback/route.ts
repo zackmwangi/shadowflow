@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     )
 
     const body = await request.json()
-    const { task_id, title_enriched, description_enriched } = body
+    const { task_id, user_id, title_enriched, description_enriched } = body
 
     if (!task_id) {
       return NextResponse.json({ error: 'Task ID is required' }, { status: 400 })
@@ -44,6 +44,7 @@ export async function POST(request: NextRequest) {
         updated_at: new Date().toISOString(),
       })
       .eq('id', task_id)
+      .eq('user_id', user_id)
       .select(`
         *,
         todo_users (
