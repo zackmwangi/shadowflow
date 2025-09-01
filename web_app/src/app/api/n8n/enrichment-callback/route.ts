@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update the task with enriched data
-    const { data: task, error: updateError } = await supabase
+    const { error: updateError } = await supabase
       .from('todo_tasks')
       .update({
         title_enriched: title_enriched || null,
@@ -45,14 +45,6 @@ export async function POST(request: NextRequest) {
       })
       .eq('id', task_id)
       .eq('user_id', user_id)
-      .select(`
-        *,
-        todo_users (
-          telegram_id,
-          email
-        )
-      `)
-      .single()
 
     if (updateError) {
       console.error('Error updating task with enriched data:', updateError)
@@ -61,18 +53,29 @@ export async function POST(request: NextRequest) {
 
     console.log('Task enriched successfully:', { task_id, title_enriched, description_enriched })
 
+    // Fetch user's telegram_id from todo_users table
+    const { data: userData, error: userError } = await supabase
+      .from('todo_users')
+      .select('telegram_id, email')
+      .eq('id', user_id)
+      .single()
+
+    if (userError) {
+      console.error('Error fetching user data:', userError)
+      // Don't fail the request, just log the error
+    }
+
     // Send Telegram notification if user has linked Telegram account
-    if (task.todo_users?.telegram_id) {
+    if (userData?.telegram_id) {
       try {
         await fetch(process.env.N8N_TO_TELEGRAM_NOTIFICATION_WEBHOOK_URL || 'http://localhost:5678/webhook/telegram-notification', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            telegram_id: task.todo_users.telegram_id,
-            email: task.todo_users.email,
+            telegram_id: userData.telegram_id,
+            email: userData.email,
             action: 'task_enrichment_completed',
             task_id: task_id,
-            task_title: task.title,
             title_enriched: title_enriched,
             description_enriched: description_enriched,
             telegram_message: process.env.TELEGRAM_MSG_ENRICH_DONE || 'Your task has been enriched with helpful suggestions!'
@@ -83,7 +86,7 @@ export async function POST(request: NextRequest) {
         // Don't fail the request if Telegram notification fails
       }
     } else {
-      console.log('No Telegram account linked for user:', task.todo_users?.email)
+      console.log('No Telegram account linked for user:', userData?.email)
     }
 
     return NextResponse.json({ 
