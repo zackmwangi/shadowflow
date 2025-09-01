@@ -188,7 +188,7 @@ For task enrichment functionality:
 2. Create a webhook workflow that:
    - Receives task data from the app
    - Processes the task title for enrichment
-   - Calls back to `/api/n8n` with enriched data
+   - Calls back to `/api/n8n/enrichment-callback` with enriched data
 
 ### 6. Run the Application
 
@@ -216,7 +216,7 @@ The application will be available at `http://localhost:3000`
 - `GET /api/users/telegram/[telegram_id]` - Look up user by Telegram ID (external access)
 
 ### n8n Webhook
-- `POST /api/n8n` - Receive enriched task data from n8n workflows
+- `POST /api/n8n/enrichment-callback` - Receive enriched task data from n8n workflows
 
 ### External API Access
 The following endpoints are designed for external processes (like Telegram bots) and do not require user authentication:
@@ -275,7 +275,7 @@ src/
 2. Task is saved to Supabase
 3. n8n webhook is triggered with task data
 4. n8n processes the task and enriches it
-5. Enriched data is sent back via `/api/n8n`
+5. Enriched data is sent back via `/api/n8n/enrichment-callback`
 6. Frontend receives real-time update via Supabase subscription
 7. User sees enriched suggestions with collapsible details
 

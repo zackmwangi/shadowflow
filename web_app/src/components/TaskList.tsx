@@ -146,14 +146,26 @@ export default function TaskList({ taskFilter }: TaskListProps) {
     }
 
     try {
-      const { error } = await supabase
-        .from('todo_tasks')
-        .update({ is_completed: !isCompleted, updated_at: new Date().toISOString() })
-        .eq('id', taskId)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error('No active session')
+      }
 
-      if (error) {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          is_completed: !isCompleted,
+        }),
+      })
+
+      if (!response.ok) {
         // If update failed, re-fetch tasks to ensure UI is in sync with database
-        console.error('Error updating task completion:', error)
+        const errorData = await response.json()
+        console.error('Error updating task completion:', errorData.error)
         fetchTasks()
       }
     } catch (error) {
@@ -180,14 +192,22 @@ export default function TaskList({ taskFilter }: TaskListProps) {
     setTasks(prev => prev.filter(task => task.id !== taskId))
 
     try {
-      const { error } = await supabase
-        .from('todo_tasks')
-        .delete()
-        .eq('id', taskId)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error('No active session')
+      }
 
-      if (error) {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+      })
+
+      if (!response.ok) {
         // If deletion failed, restore the task to the UI
-        console.error('Error deleting task:', error)
+        const errorData = await response.json()
+        console.error('Error deleting task:', errorData.error)
         // Re-fetch tasks to ensure UI is in sync with database
         fetchTasks()
       }
@@ -217,17 +237,26 @@ export default function TaskList({ taskFilter }: TaskListProps) {
     setUpdatingTasks(prev => new Set(prev).add(taskId))
 
     try {
-      const { error } = await supabase
-        .from('todo_tasks')
-        .update({ 
-          title: newTitle, 
-          updated_at: new Date().toISOString() 
-        })
-        .eq('id', taskId)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error('No active session')
+      }
 
-      if (error) {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          title: newTitle,
+        }),
+      })
+
+      if (!response.ok) {
         // If update failed, show error message
-        console.error('Error updating task title:', error)
+        const errorData = await response.json()
+        console.error('Error updating task title:', errorData.error)
         setEditError('Failed to save changes. Please try again.')
         // Re-fetch tasks to ensure UI is in sync with database
         fetchTasks()

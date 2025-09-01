@@ -44,45 +44,32 @@ export default function AddTaskForm({ onTaskAdded }: AddTaskFormProps) {
     setError(null)
 
     try {
-      // Create task directly using Supabase client
-      const { data: task, error } = await supabase
-        .from('todo_tasks')
-        .insert({
-          user_id: user.id,
-          title: data.title.trim(),
-          is_completed: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .select()
-        .single()
-
-      if (error) {
-        console.error('Supabase Error:', error)
-        throw new Error(error.message || 'Failed to create task')
+      // Create task using API endpoint
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        throw new Error('No active session')
       }
 
+      const response = await fetch('/api/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({
+          title: data.title.trim(),
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to create task')
+      }
+
+      const task = await response.json()
       console.log('Task created successfully:', task)
       reset()
       onTaskAdded()
-
-      // Trigger n8n workflow for task enrichment (optional)
-      try {
-        await fetch('/api/n8n', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            task_id: task.id,
-            title: task.title,
-            user_id: user.id,
-          }),
-        })
-      } catch (n8nError) {
-        console.error('Failed to trigger n8n workflow:', n8nError)
-        // Don't fail the request if n8n is not available
-      }
     } catch (err) {
       console.error('Error creating task:', err)
       setError(err instanceof Error ? err.message : 'An unexpected error occurred')

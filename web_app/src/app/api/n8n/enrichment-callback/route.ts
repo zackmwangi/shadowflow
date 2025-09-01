@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
         },
       }
     )
-    
+
     const body = await request.json()
     const { task_id, title_enriched, description_enriched } = body
 
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update the task with enriched data
-    const { data: task, error } = await supabase
+    const { data: task, error: updateError } = await supabase
       .from('todo_tasks')
       .update({
         title_enriched: title_enriched || null,
@@ -46,37 +46,26 @@ export async function POST(request: NextRequest) {
       .eq('id', task_id)
       .select(`
         *,
-        todo_users!inner(
-          id,
-          email,
+        todo_users (
           telegram_id,
-          first_name,
-          last_name
+          email
         )
       `)
       .single()
 
-    if (error) {
-      console.error('Error updating task with enriched data:', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+    if (updateError) {
+      console.error('Error updating task with enriched data:', updateError)
+      return NextResponse.json({ error: 'Failed to update task' }, { status: 500 })
     }
 
-    console.log('Task enriched successfully:', { taskId: task_id, title: task.title })
+    console.log('Task enriched successfully:', { task_id, title_enriched, description_enriched })
 
     // Send Telegram notification if user has linked Telegram account
     if (task.todo_users?.telegram_id) {
       try {
-        console.log('Sending Telegram notification for task enrichment:', {
-          taskId: task_id,
-          telegramId: task.todo_users.telegram_id,
-          userEmail: task.todo_users.email
-        })
-
         await fetch(process.env.N8N_TO_TELEGRAM_NOTIFICATION_WEBHOOK_URL || 'http://localhost:5678/webhook/telegram-notification', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             telegram_id: task.todo_users.telegram_id,
             email: task.todo_users.email,
@@ -88,19 +77,25 @@ export async function POST(request: NextRequest) {
             telegram_message: process.env.TELEGRAM_MSG_ENRICH_DONE || 'Your task has been enriched with helpful suggestions!'
           }),
         })
-
-        console.log('Telegram notification sent successfully for task enrichment')
       } catch (n8nError) {
-        console.error('Failed to send Telegram notification for task enrichment:', n8nError)
-        // Don't fail the request if n8n notification is not available
+        console.error('Failed to send Telegram notification:', n8nError)
+        // Don't fail the request if Telegram notification fails
       }
     } else {
-      console.log('No Telegram account linked for user, skipping notification')
+      console.log('No Telegram account linked for user:', task.todo_users?.email)
     }
 
-    return NextResponse.json(task)
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Task enriched successfully',
+      task_id,
+      title_enriched,
+      description_enriched
+    })
   } catch (error) {
-    console.error('Error in n8n webhook:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error('n8n enrichment callback error:', error)
+    return NextResponse.json({ 
+      error: 'Internal server error' 
+    }, { status: 500 })
   }
 }
