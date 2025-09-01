@@ -76,7 +76,7 @@ export async function POST(request: Request) {
 
     // Generate new code
     const code = generateCode()
-    const expiresAt = new Date(Date.now() + 120 * 1000) // 120 seconds (2 minutes) from now
+            const expiresAt = new Date(Date.now() + 180 * 1000) // 180 seconds (3 minutes) from now
 
     // Delete any existing unused codes for this user
     await supabase

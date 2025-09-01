@@ -468,9 +468,12 @@ export default function TaskList({ taskFilter }: TaskListProps) {
                                       <h4 className="text-sm font-semibold text-gray-800">Suggested plan of action</h4>
                                     </div>
                                     <div className="bg-white p-3 rounded border-l-4 border-[#00A0DC]">
-                                      <p className="text-sm text-gray-700 whitespace-pre-wrap">
-                                        {task.description_enriched}
-                                      </p>
+                                      <div 
+                                        className="text-sm text-gray-700 prose prose-sm max-w-none"
+                                        dangerouslySetInnerHTML={{ 
+                                          __html: task.description_enriched || '' 
+                                        }}
+                                      />
                                     </div>
                                   </div>
                                 )}

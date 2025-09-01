@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
             task_id: task_id,
             title_enriched: title_enriched,
             description_enriched: description_enriched,
-            telegram_message: process.env.TELEGRAM_MSG_ENRICH_DONE || 'Your task has been enriched with helpful suggestions!'
+            telegram_message: process.env.TELEGRAM_MSG_ENRICH_DONE+": "+title_enriched || 'Your task has been enriched with helpful suggestions!'
           }),
         })
       } catch (n8nError) {
