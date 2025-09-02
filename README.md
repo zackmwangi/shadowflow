@@ -3,6 +3,8 @@ Your smart execution partner
 
 ## A workflow automation project demo of an AI-driven smart task planning and enrichment app.
 
+URL: https://shadowflow-indol.vercel.app(https://shadowflow-indol.vercel.app/)
+
 ### Key features
 - Web app for account setup and task management
 - AI-enabled task enrichment upon creation
