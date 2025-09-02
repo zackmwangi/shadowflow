@@ -1,7 +1,7 @@
 # ShadowFlow - Task Management App
 Your smart execution partner
 
-## A workflow automation demo project demonstrating through a smart task planning and enrichment app.
+## A workflow automation project demo of an AI-driven smart task planning and enrichment app.
 
 ### Key features
 - Web app for account setup and task management
