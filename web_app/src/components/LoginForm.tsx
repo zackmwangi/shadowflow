@@ -50,6 +50,16 @@ export default function LoginForm() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="max-w-md w-full space-y-8 p-8">
+        {/* App Title and Slogan Section */}
+        <div className="bg-[#00A0DC] rounded-lg p-6 text-center mb-6">
+          <h1 className="text-4xl font-bold text-white mb-2">
+            ShadowFlow
+          </h1>
+          <p className="text-xl text-white">
+            Your smart execution partner.
+          </p>
+        </div>
+
         <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-900">
             {isSignUp ? 'Create Account' : 'Sign In'}
