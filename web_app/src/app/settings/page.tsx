@@ -778,7 +778,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key`}
                         <p className="mb-2">To connect your Telegram account:</p>
                         <ol className="list-decimal list-inside space-y-1 ml-4">
                           <li>Install the <a href="https://telegram.org/" target="_blank" rel="noopener noreferrer" className="text-[#00A0DC] hover:underline">Telegram app for your device</a></li>
-                          <li>Search for our bot (<strong>shadowlights</strong>) and start a conversation</li>
+                          <li>Search for our bot (<strong>shadowlightsbot</strong>) and start a conversation</li>
                           <li>Generate a code above</li>
                           <li>Use the code on the bot to link your account</li>
                           <li>Account will be automatically linked</li>
