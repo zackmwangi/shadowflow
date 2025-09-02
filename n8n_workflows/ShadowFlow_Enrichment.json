@@ -1,0 +1,309 @@
+{
+  "name": "ShadowFlow_Enrichment",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "0d96f323-784b-4f20-ae99-65d73b7e1691",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -176,
+        80
+      ],
+      "id": "1b02bfcc-e645-4e94-a4f8-715460dcfde9",
+      "name": "Trigger task enrichment",
+      "webhookId": "0d96f323-784b-4f20-ae99-65d73b7e1691",
+      "notesInFlow": true,
+      "notes": "Accept incoming notification of new or updated record in supabase"
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        464,
+        368
+      ],
+      "id": "1e9a21b8-e71a-47aa-9ad9-9678572371c5",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n\n\n\nconst result = {\n  task_id : $('Sanitize webhook inputs').first().json.task_id,\n  user_id : $('Sanitize webhook inputs').first().json.user_id,\n  title_enriched: \"\",\n  description_enriched: \"\",\n  output:\"\"\n};\n\ntry {\n  //let raw = items[0].json.output || \"\";\n  let raw = $input.all()[0].json.output || \"\";\n\n  // Clean out code fences\n  raw = raw.replace(/```json|```/g, \"\").trim();\n\n  // Parse the embedded JSON\n  const parsed = JSON.parse(raw);\n\n  //result.title_original = parsed.task_title_original || \"\";\n  result.title_enriched = parsed.task_title_enhanced || \"\";\n  //************\n\n  //************\n  result.description_enriched = parsed.task_description_enhanced || \"\";\n\n  /*\n   * \n   */\n  result.output = raw;\n\n} catch (error) {\n  // On error, result stays with empty values\n}\n\nreturn [{ json: result }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        752,
+        80
+      ],
+      "id": "a294c9f8-e7cd-4af5-bfc2-298275e70390",
+      "name": "Format AI outputs"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://shadowflow-indol.vercel.app/api/n8n/enrichment-callback",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "task_id",
+              "value": "={{ $json.task_id }}"
+            },
+            {
+              "name": "user_id",
+              "value": "={{ $json.user_id }}"
+            },
+            {
+              "name": "title_enriched",
+              "value": "={{ $json.title_enriched }}"
+            },
+            {
+              "name": "description_enriched",
+              "value": "={{ $json.description_enriched }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1344,
+        80
+      ],
+      "id": "2349cff0-6b35-4b7e-8c0e-ae2032e62090",
+      "name": "Send enriched output to Web API"
+    },
+    {
+      "parameters": {
+        "content": "## Enrichment logic\n",
+        "height": 496,
+        "width": 1120
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "34a03d19-99f7-4717-b1d5-5838de4c7f56",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash-exp",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        272,
+        288
+      ],
+      "id": "b4ce12aa-a958-4b78-b5ef-720a59f45b38",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ZfRwBpNsZUyETV00",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "= \"You are an expert project manager. Your task is to take a simple task title and enrich it with more details. Your output must be a single JSON object with the following fields: 'task_title_original', 'task_title_enhanced', and 'task_description_enhanced'. 'task_title_original' should be the original task title. 'task_title_enhanced' should be a more detailed version of the title. 'task_description_enhanced' should be a brief description of the task, followed by a list of 3-5 actionable sub-tasks. Do not include any extra text, conversational filler, or formatting outside of the JSON object.\\n\\n Here is the original task title: {{ $json.task_title }}\"",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a helpful assistant for task enrichment in a productivity app."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        416,
+        80
+      ],
+      "id": "a1731a92-e60c-4904-b2fa-e3d47f1ce243",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhook_input = {\n  task_id: \"\",\n  task_title: \"\",\n  user_id: \"\",\n  sessionId:\"\"\n};\n\nif($input.first().json.body.task_id !=\"\" ){\n  webhook_input.task_id = $input.first().json.body.task_id;\n}\n\nif($input.first().json.body.task_title !=\"\" ){\n  webhook_input.task_title = $input.first().json.body.title;\n}\n\nif($input.first().json.body.user_id != \"\"){\n  webhook_input.user_id = $input.first().json.body.user_id;\n}\n\nwebhook_input.sessionId = $input.first().json.body.user_id+\":\"+$input.first().json.body.task_id;\n\nreturn webhook_input;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64,
+        80
+      ],
+      "id": "dcbc2661-c558-4a21-903e-e986f2b06c5a",
+      "name": "Sanitize webhook inputs"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "tasks",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.task_id }}"
+            },
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "title_enriched",
+              "fieldValue": "={{ $json.task_title_enriched }}"
+            },
+            {
+              "fieldId": "description_enriched",
+              "fieldValue": "={{ $json.task_description_enriched }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        320
+      ],
+      "id": "c7e5d14c-384a-4c1e-b6ae-accb83ef1961",
+      "name": "Update a row",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "NVLVwrTuAk8C1m4m",
+          "name": "Supabase account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "//**************\nfunction escapeHtml(s) {\n  return String(s)\n    .replace(/&/g, \"&amp;\")\n    .replace(/</g, \"&lt;\")\n    .replace(/>/g, \"&gt;\")\n    .replace(/\"/g, \"&quot;\")\n    .replace(/'/g, \"&#39;\");\n}\n\n// Split description vs sub-tasks\n$input.first().json.description_enriched\nif($input.first().json.description_enriched !=\"\"){\n  \n  const [descriptionRaw, tasksRaw = \"\"] = $input.first().json.description_enriched.split(/Sub-?tasks?:/i);\nconst description = (descriptionRaw || \"\").trim().replace(/\\s+$/,\"\");\n\n// Extract numbered subtasks: 1. ..., 2. ..., etc.\nconst items = [];\nconst re = /\\s*\\d+\\.\\s+([\\s\\S]*?)(?=\\s*\\d+\\.\\s+|$)/g;\nlet match;\nwhile ((match = re.exec(tasksRaw)) !== null) {\n  items.push(match[1].trim());\n}\n\nconst html =\n  `<p>${escapeHtml(description)}</p>\\n` +\n  `<ol style=\"list-style-type: decimal;  list-style-position: inside;\">\\n` +\n  items.map(i => `  <li>${escapeHtml(i)}</li>`).join(\"\\n\") +\n  `\\n</ol>`;\n\n  $input.all()[0].json.description_enriched = html;\n  //console.log(html);\n}\n\nreturn $input.all();\n\n\n//**************"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        80
+      ],
+      "id": "ffae3789-d08e-4f4b-8136-85b94da9fe00",
+      "name": "Enrich into HTML"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Trigger task enrichment": {
+      "main": [
+        [
+          {
+            "node": "Sanitize webhook inputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format AI outputs": {
+      "main": [
+        [
+          {
+            "node": "Enrich into HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Format AI outputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sanitize webhook inputs": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrich into HTML": {
+      "main": [
+        [
+          {
+            "node": "Send enriched output to Web API",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1d310641-9182-444e-a8bb-9970d157200d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8883109e24ec4d258f30f64de8a72bb917c662f8b9217f1c3632fc0d6cc416c5"
+  },
+  "id": "M0D6vZMfHicEwj8H",
+  "tags": []
+}

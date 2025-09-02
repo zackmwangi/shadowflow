@@ -1,0 +1,887 @@
+{
+  "name": "ShadowFlow_telegram_chat",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "cca63023-83cd-4306-8880-d47c912f831d",
+      "name": "Telegram Trigger",
+      "webhookId": "5714c37f-c36a-4c6a-ae22-a6b5ed7667fd",
+      "credentials": {
+        "telegramApi": {
+          "id": "EnQW7wOC9uVS305O",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendChatAction",
+        "chatId": "={{ $json.message.chat.id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "bc53cb4a-67bf-47b9-b475-fddce0752a37",
+      "name": "Send a chat action",
+      "webhookId": "1b9293c8-2da4-4b62-918f-a81915b6317d",
+      "credentials": {
+        "telegramApi": {
+          "id": "EnQW7wOC9uVS305O",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "#### Telegram user registration ",
+        "height": 416,
+        "width": 624
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        784,
+        112
+      ],
+      "typeVersion": 1,
+      "id": "3aeb82ee-c788-467a-9ffb-ebc59a5111e8",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "#### User interaction workflow",
+        "height": 672,
+        "width": 512
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        784,
+        -608
+      ],
+      "typeVersion": 1,
+      "id": "75f879cd-ae25-4b17-a896-54b917af17bc",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "todo_users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "telegram_id",
+              "keyValue": "={{ $('Telegram Trigger').item.json.message.from.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        384,
+        0
+      ],
+      "id": "57b53705-2ba5-40df-ab73-b7d2e3cb30a6",
+      "name": "Get a row",
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": {
+          "id": "NVLVwrTuAk8C1m4m",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "961791f3-ebff-42e1-af23-b8e3a1e3f9b0",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "fc0fb876-89c6-48ac-9e03-64b22f74cdc6",
+              "leftValue": "={{ $json.telegram_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "bf30b24c-5441-4d00-95f2-fbaa49a15c28",
+              "leftValue": "={{ $json.active }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        608,
+        0
+      ],
+      "id": "aa9def69-f53e-437b-9e94-6318efa409a3",
+      "name": "is telegram user registered"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.text }}",
+                    "rightValue": "/start",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    },
+                    "id": "eea30438-1dfb-41de-9f19-7ecf63af5b63"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "/start"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "a99123ec-5b3f-4287-bf84-4948dd2225fd",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.text }}",
+                    "rightValue": "/list",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "/list "
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "2c49d554-fb54-40aa-b814-643dd73762ff",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.text }}",
+                    "rightValue": "/add",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "/add "
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "198c086b-d1ad-41e1-b5b2-c4ece68eb910",
+                    "leftValue": "={{ $('Telegram Trigger').item.json.message.text }}",
+                    "rightValue": "/new",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "/new"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f7fc3bb7-58bf-4756-b1c3-ed78f6ed7b7a",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "default any"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        816,
+        -272
+      ],
+      "id": "ad67371a-7dee-43d7-9cf8-8f6147c265e7",
+      "name": "Conversation"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8b2b931c-ed01-4f41-9a86-e0f458023cd6",
+              "leftValue": "={{ $('Telegram Trigger').item.json.message.text }}",
+              "rightValue": "/reg",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            },
+            {
+              "id": "a6bdcae9-898c-4652-937c-3c10629be7c8",
+              "leftValue": "{{ $('Telegram Trigger').item.json.message.text }}",
+              "rightValue": "/reg ",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        816,
+        240
+      ],
+      "id": "9dde286d-9f73-439b-b88c-19e39d323323",
+      "name": "intent_to_register"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "<b>Welcome to ShadowFlow via Telegram.</b>\n\n\nTo link your web account, type a message with your email and code in the format:\n\n\n<b>/reg your@email.com:TGCODE</b><b></b>\n\n\nFor example, if:\nemail: john@yahoo.org\ncode: X9Z4AB\n\nyou would type:\n<b>/reg john@yahoo.org:X9Z4AB</b>\n\nGenerate and use a valid code from your web account settings\n\n<b>Karibu sana!!</b>\n",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1216,
+        368
+      ],
+      "id": "2b732cbc-b1d7-40e1-ab38-e2a6737dda5a",
+      "name": "instruction_to_register",
+      "webhookId": "69b46682-8b06-4d66-bd61-a8b5e8890667",
+      "credentials": {
+        "telegramApi": {
+          "id": "EnQW7wOC9uVS305O",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "Verified - detected start - instruct on correct input",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1152,
+        -592
+      ],
+      "id": "3faa4135-31da-4f8f-bf7d-425251869d89",
+      "name": "send_start",
+      "webhookId": "1c60dcad-ebb3-4b55-a02f-347ecefd67a2",
+      "credentials": {
+        "telegramApi": {
+          "id": "EnQW7wOC9uVS305O",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "Verified - Listing top 5",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1152,
+        -416
+      ],
+      "id": "6a980c52-34b6-4616-a463-298438dcb752",
+      "name": "send_list_result",
+      "webhookId": "1c60dcad-ebb3-4b55-a02f-347ecefd67a2",
+      "credentials": {
+        "telegramApi": {
+          "id": "EnQW7wOC9uVS305O",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "Verified - Adding new",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1152,
+        -256
+      ],
+      "id": "668df235-a676-46c8-b388-91fa5c156ec6",
+      "name": "send_add_result",
+      "webhookId": "1c60dcad-ebb3-4b55-a02f-347ecefd67a2",
+      "credentials": {
+        "telegramApi": {
+          "id": "EnQW7wOC9uVS305O",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "<b>Welcome back to ShadowFlow via Telegram</b>\n\n\nWe will keep adding smart features here. Keep checking us out!\n\n\nFor now, you will receive updates of your enriched tasks here.\n\n\n<b>Siku njema!</b>",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1152,
+        -80
+      ],
+      "id": "2e0ce6f6-953c-4d12-a520-fd490164bfbd",
+      "name": "send_default_result",
+      "webhookId": "1c60dcad-ebb3-4b55-a02f-347ecefd67a2",
+      "credentials": {
+        "telegramApi": {
+          "id": "EnQW7wOC9uVS305O",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://shadowflow-indol.vercel.app/api/telegram/callback",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "email",
+              "value": "={{ $json.email }}"
+            },
+            {
+              "name": "telegram_id",
+              "value": "={{ $json.telegram_id.toString() }}"
+            },
+            {
+              "name": "code",
+              "value": "={{ $json.code }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1504,
+        64
+      ],
+      "id": "6552bcf9-2a69-45d8-9ff1-adc019c89c77",
+      "name": "validate_telegram_code",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "868f3dfa-f5f0-4c7c-be2d-44f91a88a6fd",
+              "leftValue": "={{ $json.body.success }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1712,
+        64
+      ],
+      "id": "8828c16c-458f-4edd-a3b3-a5d5a3374b47",
+      "name": "Integration_pass",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "\n<b>Welcome to ShadowFlow via Telegram</b>\n\nFor now, you will receive updates of your enriched tasks here.\n\nWe will keep adding smart features here. Keep checking us out!\n\n\n<b>Siku njema!</b>",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1952,
+        -16
+      ],
+      "id": "cd93b57f-923a-4c56-ad83-b3983ecc4c8c",
+      "name": "registrant_success",
+      "webhookId": "69b46682-8b06-4d66-bd61-a8b5e8890667",
+      "credentials": {
+        "telegramApi": {
+          "id": "EnQW7wOC9uVS305O",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "Oops, you will need to try again. Ensure you are using a registered email and a valid code.",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1952,
+        288
+      ],
+      "id": "d57154f9-5efe-4175-8dd2-c2e6e31984f4",
+      "name": "registrant_fail",
+      "webhookId": "69b46682-8b06-4d66-bd61-a8b5e8890667",
+      "credentials": {
+        "telegramApi": {
+          "id": "EnQW7wOC9uVS305O",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "//const textInput = \"/reg johncena@wwe.org:ABCFED\";\n//const telegramId = \"7839537453\";\n\nconst textInput = $('Telegram Trigger').first().json.message.text;\nconst telegramId = $('Telegram Trigger').first().json.message.from.id.toString();\n\n//$input.all()[0].json\n\nlet emailInput = \"\"\nlet codeInput = \"\"\n\nlet valid_email = false;\nlet valid_code = false;\n\n//-------------------------------------------------\n\n\tfunction validateEmail(email) {\n\t  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$/;\n\t  return emailRegex.test(email);\n\t}\n\n\tfunction validateCode(code) {\n\t  const codeRegex = /^[A-Za-z0-9]{6}$/;\n\t  return codeRegex.test(code);\n\t}\n\t\n\tconst trimmedMessage = textInput.trim();\n\tconst lowerMessage = trimmedMessage.toLowerCase();\n\n\tconst messageRegex = /^\\/reg\\s*([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})\\s*:\\s*([a-zA-Z0-9]{6})\\s*$/i;\n\tconst messageMatch = lowerMessage.match(messageRegex);\n\n\tif(messageMatch){\n\t\tconst email = messageMatch[1].toLowerCase();\n\t\tconst code = messageMatch[2].toLowerCase();\n\t\t\n\t\tif(validateEmail(email)){\n\t\t\temailInput = email;\n            valid_email = true;\n\t\t}\n\t\t\n\t\tif(validateCode(code)){\n\t\t\t//codeInput = code;\n            codeInput = code.toUpperCase();\n            valid_code = true;\n\t\t}\n\t}\n\n//-------------------------------------------------\nlet valid_email_and_code = valid_email && valid_code;\n\nlet output = {\n\tsuccess: valid_email_and_code,\n\ttelegram_id: telegramId,\n\temail: emailInput,\n\tcode: codeInput,\n};\n  \nreturn [{ json: output }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        144
+      ],
+      "id": "5cee4af9-5f19-4a33-8764-202de66747dc",
+      "name": "Extract_telegram_code"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "110ef49f-edc6-4448-827d-4c0dd05e00a9",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "4557f6b5-6b9f-47ca-a336-dbf525663985",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "68b9718a-785e-4e99-910d-3e2f7e57ea2f",
+              "leftValue": "={{ $json.code }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1280,
+        144
+      ],
+      "id": "927cc4d9-7117-455a-beea-4d317c6e80ab",
+      "name": "email+code_valid"
+    }
+  ],
+  "pinData": {
+    "Telegram Trigger": [
+      {
+        "json": {
+          "update_id": 684999910,
+          "message": {
+            "message_id": 152,
+            "from": {
+              "id": 7839537453,
+              "is_bot": false,
+              "first_name": "Zack",
+              "last_name": "Mwangi",
+              "language_code": "en"
+            },
+            "chat": {
+              "id": 7839537453,
+              "first_name": "Zack",
+              "last_name": "Mwangi",
+              "type": "private"
+            },
+            "date": 1756682034,
+            "text": "/reg xyz",
+            "entities": [
+              {
+                "offset": 0,
+                "length": 4,
+                "type": "bot_command"
+              }
+            ]
+          }
+        }
+      }
+    ],
+    "Extract_telegram_code": [
+      {
+        "json": {
+          "success": true,
+          "telegram_id": "7839537453",
+          "email": "johncena@wwe.org",
+          "code": "ABCFED"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Send a chat action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a chat action": {
+      "main": [
+        [
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "is telegram user registered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "is telegram user registered": {
+      "main": [
+        [
+          {
+            "node": "Conversation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "intent_to_register",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversation": {
+      "main": [
+        [
+          {
+            "node": "send_start",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "send_list_result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "send_add_result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "send_add_result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "send_default_result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "intent_to_register": {
+      "main": [
+        [
+          {
+            "node": "Extract_telegram_code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "instruction_to_register",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "validate_telegram_code": {
+      "main": [
+        [
+          {
+            "node": "Integration_pass",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Integration_pass": {
+      "main": [
+        [
+          {
+            "node": "registrant_success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "registrant_fail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "registrant_success": {
+      "main": [
+        []
+      ]
+    },
+    "Extract_telegram_code": {
+      "main": [
+        [
+          {
+            "node": "email+code_valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "email+code_valid": {
+      "main": [
+        [
+          {
+            "node": "validate_telegram_code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "registrant_fail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "76a79858-7962-4d35-906c-3b36ca1e3847",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8883109e24ec4d258f30f64de8a72bb917c662f8b9217f1c3632fc0d6cc416c5"
+  },
+  "id": "oI2QzREw3Y4xaKPa",
+  "tags": []
+}

@@ -1,0 +1,166 @@
+{
+  "name": "ShadowFlow_telegram_notifications",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "484df6be-59b3-45de-abb3-e962cb09eead",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0fc1f3ab-879d-4a03-9b25-f615b28edaf6",
+      "name": "notify_telegrammer",
+      "webhookId": "484df6be-59b3-45de-abb3-e962cb09eead"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1cbccfee-1962-401f-91ba-6d6fc5ab835c",
+              "leftValue": "={{ $json.body.telegram_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "d86163f3-3b54-4ef4-b9e4-42c467231005",
+              "leftValue": "={{ $json.body.telegram_message }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "8dd0bc7f-1b90-44c6-a90e-4a598ad03a46",
+      "name": "sanitize_inputs"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.body.telegram_id }}",
+        "text": "={{ $json.body.telegram_message }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        464,
+        -16
+      ],
+      "id": "abd1a91a-2055-44df-a0c5-4fc1e8058385",
+      "name": "send_message",
+      "webhookId": "8554d1c8-e25b-40ce-9452-11882fe6b90c",
+      "credentials": {
+        "telegramApi": {
+          "id": "EnQW7wOC9uVS305O",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "notify_telegrammer": [
+      {
+        "json": {
+          "headers": {
+            "host": "zackmwangi.app.n8n.cloud",
+            "user-agent": "node",
+            "content-length": "170",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "accept-language": "*",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "197.248.221.199",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "KE",
+            "cf-ray": "977f0876155cea6d-FCO",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "sec-fetch-mode": "cors",
+            "x-forwarded-for": "197.248.221.199, 162.158.116.106",
+            "x-forwarded-host": "zackmwangi.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-85-bb845fb9-2wjl2",
+            "x-is-trusted": "yes",
+            "x-real-ip": "197.248.221.199"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "email": "zackmwangi3@gmail.com",
+            "telegram_id": "7839537453",
+            "action": "integration_removed",
+            "telegram_message": "Hooray! You are now connected to ShadowFlow via Telegram!"
+          },
+          "webhookUrl": "https://zackmwangi.app.n8n.cloud/webhook-test/484df6be-59b3-45de-abb3-e962cb09eead",
+          "executionMode": "test"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "notify_telegrammer": {
+      "main": [
+        [
+          {
+            "node": "sanitize_inputs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "sanitize_inputs": {
+      "main": [
+        [
+          {
+            "node": "send_message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f462a6f1-0306-436e-8e69-5cbee9c1b6a6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8883109e24ec4d258f30f64de8a72bb917c662f8b9217f1c3632fc0d6cc416c5"
+  },
+  "id": "KDKiQXp4P044Rikc",
+  "tags": []
+}
